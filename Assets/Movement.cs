@@ -1,37 +1,59 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class Movement : MonoBehaviour
 {
-    Rigidbody rb;
-    SpriteRenderer sr;
-    Animator anim;
+    private Rigidbody rb;
+    private SpriteRenderer sr;
+    private Animator anim;
 
-    public float upForce = 100;
-    public float speed = 1500;
-    public float runSpeed = 2500;
+    [Header("Movement Settings")]
+    public float upForce = 100f;
+    public float speed = 1500f;
+    public float runSpeed = 2500f;
+
+    [Header("State Flags")]
     public bool isGrounded = false;
 
-    bool isLeftShift;
-    float moveHorizontal;
-    float moveVertical; // For forward/backward movement
+    private bool isLeftShift;
+    private float moveHorizontal;
+    private float moveVertical;
+    private bool isJumping;
 
-    void Start()
+    private void Start()
     {
         rb = GetComponent<Rigidbody>();
         sr = GetComponentInChildren<SpriteRenderer>();
         anim = GetComponentInChildren<Animator>();
     }
 
-    void Update()
+    private void Update()
     {
         isLeftShift = Input.GetKey(KeyCode.LeftShift);
         moveHorizontal = Input.GetAxis("Horizontal");
-        moveVertical = Input.GetAxis("Vertical"); // W/S or Up/Down for forward/backward
+        moveVertical = Input.GetAxis("Vertical");
 
-        // Handle sprite flipping based on horizontal movement
+        HandleSpriteFlip();
+        HandleAnimation();
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        {
+            Jump();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        HandleMovement();
+
+        anim.SetFloat("xVelocity", Math.Abs(rb.velocity.x));
+    }
+
+    private void HandleSpriteFlip()
+    {
         if (moveHorizontal > 0)
         {
             sr.flipX = false;
@@ -40,31 +62,28 @@ public class Movement : MonoBehaviour
         {
             sr.flipX = true;
         }
-
-        // Handle running animation
-        if (moveHorizontal == 0 && moveVertical == 0)
-        {
-            anim.SetBool("isRunning", false);
-        }
-        else
-        {
-            anim.SetBool("isRunning", true);
-        }
-
-        // Jump functionality
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            rb.AddForce(Vector3.up * upForce, ForceMode.Impulse);
-            isGrounded = false;
-            anim.SetTrigger("Jump"); // Trigger jump animation
-        }
     }
 
-    private void FixedUpdate()
+    private void HandleAnimation()
     {
-        // Get forward direction from the camera
+        bool isMoving = Mathf.Abs(moveHorizontal) > 0 || Mathf.Abs(moveVertical) > 0;
+        anim.SetBool("isRunning", isMoving);
+        anim.SetBool("isJumping", isJumping); // Control jump animation
+    }
+
+    private void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset vertical velocity
+        rb.AddForce(Vector3.up * upForce, ForceMode.Impulse);
+        isGrounded = false;
+        isJumping = true; // Set jumping state to true
+    }
+
+    private void HandleMovement()
+    {
+        // Get forward direction from the camera, ignoring the vertical component
         Vector3 cameraForward = Camera.main.transform.forward;
-        cameraForward.y = 0; // Ignore vertical component
+        cameraForward.y = 0;
         cameraForward.Normalize();
 
         // Calculate movement direction
@@ -77,9 +96,16 @@ public class Movement : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Ensure the character is grounded when colliding with the ground
-        isGrounded = true;
-        anim.SetBool("isGrounded", true);
+        foreach (ContactPoint contact in collision.contacts)
+        {
+            if (Vector3.Angle(contact.normal, Vector3.up) < 45f)
+            {
+                isGrounded = true;
+                isJumping = false; // Reset jumping state
+                anim.SetBool("isGrounded", true);
+                break;
+            }
+        }
     }
 
     private void OnCollisionExit(Collision collision)
