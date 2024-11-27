@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MenuController : MonoBehaviour
-{ 
+{
     public GameObject menuPanel; 
 
-    public void Update() 
+    public void Update()
     {
         if (Input.GetKeyUp(KeyCode.Escape))
         {
-            menuPanel.SetActive(!menuPanel.activeSelf);
+            menuPanel.SetActive(!menuPanel.activeSelf); // Toggle the active state of the menuPanel
         }
     }
 
     public void NewGame()
     {
-        // Add functionality for starting a new game here
+        new SaveData();
     }
 
     public void Continue()
@@ -26,8 +26,9 @@ public class MenuController : MonoBehaviour
 
     public void Save()
     {
-        // Add functionality for saving the game here
-    } 
+        // Fill save data
+        DataSerializer.Save();
+    }
 
     public void Exit()
     {
