@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DataSerializer
 {
-    private static string saveFilePath = "C:\\saves\\game.save";  // Save file path
+    private static string saveFilePath = @"C:\saves\game.save";  // Correct path using verbatim string literal
 
     public static void Save()
     {
@@ -16,16 +16,34 @@ public class DataSerializer
 
         BinaryFormatter formatter = new BinaryFormatter();
 
-        if (!Directory.Exists("C:\\saves"))
+        // Check if the directory exists, create it if not
+        string directoryPath = Path.GetDirectoryName(saveFilePath);
+        if (!Directory.Exists(directoryPath))
         {
-            Directory.CreateDirectory("C:\\saves");
+            try
+            {
+                Directory.CreateDirectory(directoryPath);  // Create the directory if it doesn't exist
+                Debug.Log("Directory created: " + directoryPath);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("Failed to create directory: " + ex.Message);
+                return;
+            }
         }
 
-        FileStream file = File.Create(saveFilePath);
-        formatter.Serialize(file, SaveData.Instance);
-        file.Close();
-
-        Debug.Log("Game saved successfully.");
+        try
+        {
+            // Create and open the file stream
+            FileStream file = File.Create(saveFilePath);
+            formatter.Serialize(file, SaveData.Instance);  // Serialize the data into the file
+            file.Close();
+            Debug.Log("Game saved successfully to: " + saveFilePath);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Failed to save the game: " + ex.Message);
+        }
     }
 
     public static bool SaveFileExists()
@@ -42,20 +60,16 @@ public class DataSerializer
         }
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream file = File.Open(saveFilePath, FileMode.Open);
-
         try
         {
-            SaveData.Instance = (SaveData)formatter.Deserialize(file);  // Load save data into singleton instance
-            Debug.Log("Game loaded successfully.");
-        }
-        catch
-        {
-            Debug.LogError("Failed to load save data.");
-        }
-        finally
-        {
+            FileStream file = File.Open(saveFilePath, FileMode.Open);
+            SaveData.Instance = (SaveData)formatter.Deserialize(file);  // Deserialize the data into singleton instance
             file.Close();
+            Debug.Log("Game loaded successfully from: " + saveFilePath);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Failed to load save data: " + ex.Message);
         }
     }
 }

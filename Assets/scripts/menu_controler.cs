@@ -10,15 +10,22 @@ public class MenuController : MonoBehaviour
 
     private bool gameStarted = false; // Track if the game has started (to control menu behavior)
 
+    // Called when the object is created (called only once, on object creation)
+    public void Start()
+    {
+        // Check if the save file exists when the game starts
+        CheckSaveFileExistence();  // This sets the interactability of the Continue button
+    }
+
     // Called every frame
     public void Update()
     {
         // Press Escape to toggle the menu
         if (Input.GetKeyUp(KeyCode.Escape))
         {
-            if (!gameStarted || menuPanel.activeSelf) // If the game hasn't started or menu is already active
+            if(gameStarted)
             {
-                menuPanel.SetActive(!menuPanel.activeSelf);  // Toggle the active state of the menuPanel
+                menuPanel.SetActive(!menuPanel.activeSelf);
             }
         }
     }
@@ -46,10 +53,12 @@ public class MenuController : MonoBehaviour
 
     // Called to save the current game
     public void Save()
-    {
+    { 
+        Debug.Log("test");
         if (SaveData.Instance != null)
         {
-            DataSerializer.Save();
+            DataSerializer.Save();  // Call the Save method from DataSerializer to save the data
+            continueButton.interactable = true;  // Enable the Continue button after saving
             Debug.Log("Game saved successfully.");
         }
         else
