@@ -1,72 +1,61 @@
-﻿using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public class DataSerializer : MonoBehaviour
+public class DataSerializer
 {
+    private static string saveFilePath = "C:\\saves\\game.save";  // Save file path
 
     public static void Save()
     {
+        if (SaveData.Instance == null)
+        {
+            Debug.LogError("Cannot save, no game data available.");
+            return;
+        }
+
         BinaryFormatter formatter = new BinaryFormatter();
 
-        //Application.persistentDataPath + "\\saves";
-
-        if (!Directory.Exists("D:\\saves"))
+        if (!Directory.Exists("C:\\saves"))
         {
-            Directory.CreateDirectory("D:\\saves");
+            Directory.CreateDirectory("C:\\saves");
         }
 
-        FileStream file = File.Create("D:\\saves\\game.save");
-        formatter.Serialize(file, SaveData.instance);
-
+        FileStream file = File.Create(saveFilePath);
+        formatter.Serialize(file, SaveData.Instance);
         file.Close();
+
+        Debug.Log("Game saved successfully.");
     }
 
-    public static bool AnySaves()
+    public static bool SaveFileExists()
     {
-        if (!Directory.Exists("D:\\saves"))
-        {
-            return false;
-        }
-        if (!File.Exists("D:\\saves\\game.save"))
-        {
-            return false;
-
-        }
-
-        return true;
+        return File.Exists(saveFilePath);  // Check if the save file exists
     }
 
     public static void Load()
     {
-        if (!Directory.Exists("D:\\saves"))
+        if (!SaveFileExists())
         {
-            Debug.LogError("Directory was not found");
+            Debug.LogError("Save file not found.");
             return;
-        }
-        if (!File.Exists("D:\\saves\\game.save"))
-        {
-            Debug.LogError("File was not found");
-            return;
-
         }
 
         BinaryFormatter formatter = new BinaryFormatter();
-        FileStream file = File.Open("D:\\saves\\game.save", FileMode.Open);
+        FileStream file = File.Open(saveFilePath, FileMode.Open);
 
         try
         {
-            SaveData data = new SaveData((SaveData)formatter.Deserialize(file));
-            file.Close();
-            
+            SaveData.Instance = (SaveData)formatter.Deserialize(file);  // Load save data into singleton instance
+            Debug.Log("Game loaded successfully.");
         }
         catch
         {
-            Debug.LogError("Cannot get savedata");
-
+            Debug.LogError("Failed to load save data.");
         }
-
+        finally
+        {
+            file.Close();
+        }
     }
 }
-

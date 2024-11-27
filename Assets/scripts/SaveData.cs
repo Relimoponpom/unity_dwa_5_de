@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using UnityEngine;
-
 
 [Serializable]
 public class SaveData
 {
-    public static SaveData instance;
+    public static SaveData Instance; // Singleton Instance
     public int collectiblesCount;
     public float playerX, playerY, playerZ;
+
+    // Constructor for a new save
     public SaveData()
     {
         CreateInstance();
@@ -17,12 +15,12 @@ public class SaveData
 
     private void CreateInstance()
     {
-        instance = this;
+        Instance = this;
     }
 
+    // Constructor to load existing data
     public SaveData(SaveData newData)
     {
-        instance = newData;
-
+        Instance = newData;
     }
 }

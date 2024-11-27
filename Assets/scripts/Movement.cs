@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
 using UnityEngine;
 
@@ -48,7 +46,6 @@ public class Movement : MonoBehaviour
     private void FixedUpdate()
     {
         HandleMovement();
-
         anim.SetFloat("xVelocity", Math.Abs(rb.velocity.x));
     }
 
@@ -68,28 +65,24 @@ public class Movement : MonoBehaviour
     {
         bool isMoving = Mathf.Abs(moveHorizontal) > 0 || Mathf.Abs(moveVertical) > 0;
         anim.SetBool("isRunning", isMoving);
-        anim.SetBool("isJumping", isJumping); // Control jump animation
+        anim.SetBool("isJumping", isJumping);
     }
 
     private void Jump()
     {
-        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Reset vertical velocity
+        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
         rb.AddForce(Vector3.up * upForce, ForceMode.Impulse);
         isGrounded = false;
-        isJumping = true; // Set jumping state to true
+        isJumping = true;
     }
 
     private void HandleMovement()
     {
-        // Get forward direction from the camera, ignoring the vertical component
         Vector3 cameraForward = Camera.main.transform.forward;
         cameraForward.y = 0;
         cameraForward.Normalize();
 
-        // Calculate movement direction
         Vector3 movement = (cameraForward * moveVertical + Vector3.right * moveHorizontal).normalized;
-
-        // Apply velocity
         float appliedSpeed = isLeftShift ? runSpeed : speed;
         rb.velocity = new Vector3(movement.x * appliedSpeed * Time.deltaTime, rb.velocity.y, movement.z * appliedSpeed * Time.deltaTime);
     }
@@ -101,7 +94,7 @@ public class Movement : MonoBehaviour
             if (Vector3.Angle(contact.normal, Vector3.up) < 45f)
             {
                 isGrounded = true;
-                isJumping = false; // Reset jumping state
+                isJumping = false;
                 anim.SetBool("isGrounded", true);
                 break;
             }
@@ -112,5 +105,20 @@ public class Movement : MonoBehaviour
     {
         isGrounded = false;
         anim.SetBool("isGrounded", false);
+    }
+
+    public void Save()
+    {
+        if (SaveData.Instance != null)
+        {
+            SaveData.Instance.playerX = transform.position.x;
+            SaveData.Instance.playerY = transform.position.y;
+            SaveData.Instance.playerZ = transform.position.z;
+            Debug.Log("Player position saved: " + transform.position);
+        }
+        else
+        {
+            Debug.LogWarning("SaveData instance is null. Cannot save player position.");
+        }
     }
 }
