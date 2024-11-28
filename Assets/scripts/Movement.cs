@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Rigidbody))] 
+[RequireComponent(typeof(CollectibleCounter))]
 public class Movement : MonoBehaviour
 {
     private Rigidbody rb;
@@ -121,4 +122,10 @@ public class Movement : MonoBehaviour
             Debug.LogWarning("SaveData instance is null. Cannot save player position.");
         }
     }
-}
+} 
+
+
+
+
+
+

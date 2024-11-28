@@ -44,7 +44,8 @@ public class MenuController : MonoBehaviour
 
     // Called when continuing from a save file
     public void Continue()
-    {
+    { 
+        
         // Ensure we load the saved data and hide the menu
         DataSerializer.Load();
         menuPanel.SetActive(false);
@@ -65,7 +66,9 @@ public class MenuController : MonoBehaviour
         {
             Debug.LogError("Cannot save, no game data available.");
         }
-    }
+    } 
+
+    
 
     // Called to exit the game
     public void Exit()
